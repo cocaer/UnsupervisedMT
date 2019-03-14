@@ -1,5 +1,14 @@
 # Unsupervised Machine Translation
 
+## Add some custom features
+- save the whole best checkpoint, not only the model
+- save the model for each interval
+- do not shuffle the test/valid set for multi-reference   
+- add some online training codes
+
+
+--- 
+
 This repository contains the original implementation of the unsupervised PBSMT and NMT models presented in  
 [Phrase-Based & Neural Unsupervised Machine Translation](https://arxiv.org/abs/1804.07755) (EMNLP 2018).
 

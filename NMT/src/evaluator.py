@@ -60,7 +60,7 @@ class EvaluatorMT(object):
         else:
             i = None
         dataset.batch_size = 32
-        for batch in dataset.get_iterator(shuffle=False, group_by_size=True)():
+        for batch in dataset.get_iterator(shuffle=False, group_by_size=False)():
             yield batch if i is None else batch[i]
 
     def get_iterator(self, data_type, lang1, lang2):
@@ -75,7 +75,7 @@ class EvaluatorMT(object):
             k = (lang1, lang2) if lang1 < lang2 else (lang2, lang1)
             dataset = self.data['para'][k][data_type]
             dataset.batch_size = 32
-            for batch in dataset.get_iterator(shuffle=False, group_by_size=True)():
+            for batch in dataset.get_iterator(shuffle=False, group_by_size=False)():
                 yield batch if lang1 < lang2 else batch[::-1]
 
     def create_reference_files(self):

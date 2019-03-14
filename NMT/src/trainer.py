@@ -25,7 +25,6 @@ logger = getLogger()
 
 class TrainerMT(MultiprocessingEventLoop):
 
-    VALIDATION_METRICS = []
 
     def __init__(self, encoder, decoder, discriminator, lm, data, params):
         """
@@ -38,6 +37,8 @@ class TrainerMT(MultiprocessingEventLoop):
         self.lm = lm
         self.data = data
         self.params = params
+
+        self.VALIDATION_METRICS = []
 
         # initialization for on-the-fly generation/training
         if len(params.pivo_directions) > 0:
@@ -785,7 +786,7 @@ class TrainerMT(MultiprocessingEventLoop):
             'lm': self.lm,
         }, path)
 
-    def save_checkpoint(self):
+    def save_checkpoint(self, name=""):
         """
         Checkpoint the experiment.
         """
@@ -803,7 +804,7 @@ class TrainerMT(MultiprocessingEventLoop):
             'best_metrics': self.best_metrics,
             'best_stopping_criterion': self.best_stopping_criterion,
         }
-        checkpoint_path = os.path.join(self.params.dump_path, 'checkpoint.pth')
+        checkpoint_path = os.path.join(self.params.dump_path, 'checkpoint.pth_'+name)
         logger.info("Saving checkpoint to %s ..." % checkpoint_path)
         torch.save(checkpoint_data, checkpoint_path)
 
@@ -852,14 +853,15 @@ class TrainerMT(MultiprocessingEventLoop):
             if scores[metric] > self.best_metrics[metric]:
                 self.best_metrics[metric] = scores[metric]
                 logger.info('New best score for %s: %.6f' % (metric, scores[metric]))
-                self.save_model('best-%s' % metric)
+                self.save_checkpoint('best-%s' % metric)
 
     def save_periodic(self):
         """
         Save the models periodically.
         """
-        if self.params.save_periodic and self.epoch % 20 == 0 and self.epoch > 0:
-            self.save_model('periodic-%i' % self.epoch)
+        if self.params.save_periodic and self.epoch > 10 == 0 and self.epoch > 0:
+            #self.save_model('epoch-%i' % self.epoch)
+            self.save_checkpoint(str(self.epoch))
 
     def end_epoch(self, scores):
         """
