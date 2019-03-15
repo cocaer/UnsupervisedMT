@@ -167,12 +167,14 @@ def load_para_data(params, data):
             set_parameters(params, data2['dico'])
 
             # set / check dictionaries
-            if lang1 != 'ch':
+            if lang1 not in data['dico']:
                 data['dico'][lang1] = data1['dico']
-                data['dico'][lang2] = data1['dico']
             else:
-                data['dico'][lang1] = data2['dico']
+                assert data['dico'][lang1] == data1['dico']
+            if lang2 not in data['dico']:
                 data['dico'][lang2] = data2['dico']
+            else:
+                assert data['dico'][lang2] == data2['dico']
 
             # parallel data
             para_data = ParallelDataset(
@@ -309,8 +311,6 @@ def check_all_data_params(params):
     # check languages
     params.langs = params.langs.split(',')
     assert len(params.langs) == len(set(params.langs)) >= 2
-    print(params.langs)
-    print(sorted(params.langs))
     assert sorted(params.langs) == params.langs
     params.id2lang = {k: v for k, v in enumerate(sorted(params.langs))}
     params.lang2id = {k: v for v, k in params.id2lang.items()}
@@ -333,11 +333,9 @@ def check_all_data_params(params):
     assert all(len(k.split('-')) == 2 for k in params.para_dataset.keys())
     assert all(len(v.split(',')) == 3 for v in params.para_dataset.values())
     params.para_dataset = {tuple(k.split('-')): tuple(v.split(',')) for k, v in params.para_dataset.items()}
-    print(params.para_dataset)
     assert not (params.n_para == 0) ^ (all(v[0] == '' for v in params.para_dataset.values()))
     for (lang1, lang2), (train_path, valid_path, test_path) in params.para_dataset.items():
         assert lang1 < lang2 and lang1 in params.langs and lang2 in params.langs
-        print(train_path.replace('XX', lang1))
         assert train_path == '' or os.path.isfile(train_path.replace('XX', lang1))
         assert train_path == '' or os.path.isfile(train_path.replace('XX', lang2))
         assert os.path.isfile(valid_path.replace('XX', lang1))

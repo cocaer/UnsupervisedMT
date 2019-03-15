@@ -272,6 +272,8 @@ parser.add_argument("--lang4", type=str, default="en2ch")
 parser.add_argument("--criterion1", type=str, default="bleu_ch2en_en_test")
 parser.add_argument("--criterion2", type=str, default="bleu_en2ch_ch_test")
 
+parser.add_argument("--dump_path_", type=str, default="bleu_en2ch_ch_test")
+
 params = parser.parse_args()
 
 
@@ -437,7 +439,7 @@ def apply_bpe(txt, fastbpe, codes):
     return txt
 
 
-def convert_lang(sent, length, trainer1, lang1, trainer2, lang2, fastbpe, bpecodes, word_dico=None):
+def convert_lang(sent, length, trainer1, lang1, trainer2, lang2, fastbpe="", bpecodes="", word_dico=None):
     """
     convert lang1 to lang2
     :param bpecodes:(a)lang1(2)lang2
@@ -447,7 +449,8 @@ def convert_lang(sent, length, trainer1, lang1, trainer2, lang2, fastbpe, bpecod
     sent = convert_to_text(sent, length, trainer1, lang1)
     sent = dico_translation(sent, word_dico)
 
-    sent = apply_bpe(sent, fastbpe, bpecodes)
+    if fastbpe != "":
+        sent = apply_bpe(sent, fastbpe, bpecodes)
     sent, length = convert_txt_to_tensor(sent, trainer2, lang2)
     return sent, length
 
@@ -487,8 +490,10 @@ if __name__ == '__main__':
     params2.exp_name, params2.exp_id, params2.langs, params2.para_directions = params2.exp_name_, params2.exp_id_, params2.langs_, params2.para_directions_
     params2.pivo_directions, params2.mono_dataset, params2.pretrained_emb, params2.mono_dataset = params2.pivo_directions_, params2.mono_dataset_, params2.pretrained_emb_, params2.mono_dataset_
     params2.para_dataset, params2.mono_directions = params2.para_dataset_, params2.mono_directions_
-    params2.dump_path = 'dumped/' + params2.exp_name + "/" + params2.exp_id
+    params2.dump_path = params2.dump_path_ +'/' + params.exp_name_ +'/' +params.exp_id_
 
+    print(params2.dump_path)
+    print(params.dump_path)
     # lang1 en lang2 fr2en lang3 fr lang4 en2fr
     lang1 = params.lang1
     lang2 = params.lang2
@@ -498,13 +503,12 @@ if __name__ == '__main__':
     criterion1 = params.criterion1
     criterion2 = params.criterion2
 
-    trainer1, evaluator1 = load(params)
     trainer2, evaluator2 = load(params2)
+    trainer1, evaluator1 = load(params)
 
-    best_bleu1 = 13.20  # evaluator1.run_all_evals(0)[criterion1]
-    best_bleu2 = 9.18  # evaluator2.run_all_evals(0)[criterion2]
+    best_bleu1 = 13.07#evaluator1.run_all_evals(0)[criterion1]
+    best_bleu2 = 8.47#evaluator2.run_all_evals(0)[criterion2]
 
-    update_cirle = 3
 
     logger.info("###################best bleu############################")
     logger.info("{}:{},{}:{}".format(criterion1, best_bleu1, criterion2, best_bleu2))
@@ -528,8 +532,7 @@ if __name__ == '__main__':
 
             #################################
 
-            sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer2, lang4, lang3,
-                                                                             params2)  # en2fr  _ fr
+            sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer2, lang4, lang3, params2)  # en2fr  _ fr
             sent2[0, :] = params2.bos_index[params2.lang2id[lang3]]
             sent1[0, :] = params2.bos_index[params2.lang2id[lang4]]
             sent1, sent2 = sent1.cuda(), sent2.cuda()
