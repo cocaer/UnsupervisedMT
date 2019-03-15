@@ -7,7 +7,6 @@
 - add some online training codes(sercet)
 - use both gpu and  cpu, reduce  cpu load
 
-
 --- 
 
 This repository contains the original implementation of the unsupervised PBSMT and NMT models presented in  

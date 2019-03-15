@@ -274,7 +274,7 @@ def main(params):
 
         trainer.n_sentences = 0
 
-        use_cpu = 0
+        use_gpu = 0
 
         while trainer.n_sentences < params.epoch_size:
 
@@ -310,34 +310,7 @@ def main(params):
             if params.lambda_xe_otfd > 0 or params.lambda_xe_otfa > 0:
 
 
-                if use_cpu % 5 == 0:
-                    # start on-the-fly batch generations
-                    if not getattr(params, 'started_otf_batch_gen', False):
-                        otf_iterator = trainer.otf_bt_gen_async()
-                        params.started_otf_batch_gen = True
-
-                    # update model parameters on subprocesses
-                    if trainer.n_iter % params.otf_sync_params_every == 0:
-                        trainer.otf_sync_params()
-
-                    # get training batch from CPU
-                    before_gen = time.time()
-                    batches = next(otf_iterator)
-                    trainer.gen_time += time.time() - before_gen
-
-                    # training
-                    for batch in batches:
-                        lang1, lang2, lang3 = batch['lang1'], batch['lang2'], batch['lang3']
-                        # 2-lang back-translation - autoencoding
-                        if lang1 != lang2 == lang3:
-                            trainer.otf_bt(batch, params.lambda_xe_otfa, params.otf_backprop_temperature)
-                        # 2-lang back-translation - parallel data
-                        elif lang1 == lang3 != lang2:
-                            trainer.otf_bt(batch, params.lambda_xe_otfd, params.otf_backprop_temperature)
-                        # 3-lang back-translation - parallel data
-                        elif lang1 != lang2 and lang2 != lang3 and lang1 != lang3:
-                            trainer.otf_bt(batch, params.lambda_xe_otfd, params.otf_backprop_temperature)
-                else:
+                if use_gpu % 5 == 0:
 
                     back_direction = [(params.mono_directions[0],params.mono_directions[1]), (params.mono_directions[1],params.mono_directions[0])]
                     # get training batch from GPU
@@ -375,10 +348,33 @@ def main(params):
                         elif lang1 != lang2 and lang2 != lang3 and lang1 != lang3:
                             trainer.otf_bt(batch, params.lambda_xe_otfd, params.otf_backprop_temperature)
 
+                else:
+                    # start on-the-fly batch generations
+                    if not getattr(params, 'started_otf_batch_gen', False):
+                        otf_iterator = trainer.otf_bt_gen_async()
+                        params.started_otf_batch_gen = True
 
+                    # update model parameters on subprocesses
+                    if trainer.n_iter % params.otf_sync_params_every == 0:
+                        trainer.otf_sync_params()
 
+                    # get training batch from CPU
+                    before_gen = time.time()
+                    batches = next(otf_iterator)
+                    trainer.gen_time += time.time() - before_gen
 
-
+                    # training
+                    for batch in batches:
+                        lang1, lang2, lang3 = batch['lang1'], batch['lang2'], batch['lang3']
+                        # 2-lang back-translation - autoencoding
+                        if lang1 != lang2 == lang3:
+                            trainer.otf_bt(batch, params.lambda_xe_otfa, params.otf_backprop_temperature)
+                        # 2-lang back-translation - parallel data
+                        elif lang1 == lang3 != lang2:
+                            trainer.otf_bt(batch, params.lambda_xe_otfd, params.otf_backprop_temperature)
+                        # 3-lang back-translation - parallel data
+                        elif lang1 != lang2 and lang2 != lang3 and lang1 != lang3:
+                            trainer.otf_bt(batch, params.lambda_xe_otfd, params.otf_backprop_temperature)
 
 
             trainer.iter()
