@@ -167,10 +167,12 @@ def load_para_data(params, data):
             set_parameters(params, data2['dico'])
 
             # set / check dictionaries
-            if lang1 != 'ch':
+            if lang1 == 'ch':
+                print(lang1,"#"*20)
                 data['dico'][lang1] = data1['dico']
                 data['dico'][lang2] = data1['dico']
             else:
+                print(lang2,"#"*20)
                 data['dico'][lang1] = data2['dico']
                 data['dico'][lang2] = data2['dico']
 

@@ -315,7 +315,7 @@ def get_fake_para_from_trainer(trainer, lang1, lang2, params):
     lang1_id = params.lang2id[lang1]
     lang2_id = params.lang2id[lang2]
 
-    sent1, len1, sent1_, len1_ = get_batch_from_trainer(trainer, lang1, lang2)
+    sent1, len1, sent1_, len1_ = get_batch_from_trainer(trainer, lang1, lang2) #ch2en en
     with torch.no_grad():
         sent1 = sent1.cuda()
         encoded = trainer.encoder(sent1, len1, lang1_id)
@@ -488,17 +488,19 @@ if __name__ == '__main__':
 
     params2 = copy.deepcopy(params)
     params2.exp_name, params2.exp_id, params2.langs, params2.para_directions = params2.exp_name_, params2.exp_id_, params2.langs_, params2.para_directions_
-    params2.pivo_directions, params2.mono_dataset, params2.pretrained_emb, params2.mono_dataset = params2.pivo_directions_, params2.mono_dataset_, params2.pretrained_emb_, params2.mono_dataset_
+    params2.pivo_directions, params2.mono_dataset,  params2.mono_dataset = params2.pivo_directions_, params2.mono_dataset_, params2.mono_dataset_
     params2.para_dataset, params2.mono_directions = params2.para_dataset_, params2.mono_directions_
     params2.dump_path = params2.dump_path_ +'/' + params.exp_name_ +'/' +params.exp_id_
 
+
+
     print(params2.dump_path)
     print(params.dump_path)
-    # lang1 en lang2 fr2en lang3 fr lang4 en2fr
-    lang1 = params.lang1
-    lang2 = params.lang2
-    lang3 = params.lang3
-    lang4 = params.lang4
+    # --lang1 en --lang2 ch2en --lang3 ch --lang4 en2ch \
+    lang1 = params.lang1 #en
+    lang2 = params.lang2 #ch2en
+    lang3 = params.lang3 #ch
+    lang4 = params.lang4 #en2ch
 
     criterion1 = params.criterion1
     criterion2 = params.criterion2
@@ -506,8 +508,8 @@ if __name__ == '__main__':
     trainer2, evaluator2 = load(params2)
     trainer1, evaluator1 = load(params)
 
-    best_bleu1 = 13.07#evaluator1.run_all_evals(0)[criterion1]
-    best_bleu2 = 8.47#evaluator2.run_all_evals(0)[criterion2]
+    best_bleu1 = 13.07#evaluator1.run_all_evals(0)[criterion1]##
+    best_bleu2 = 8.47 #evaluator2.run_all_evals(0)[criterion2]##
 
 
     logger.info("###################best bleu############################")
@@ -516,45 +518,52 @@ if __name__ == '__main__':
     for epoch in range(20):
         for i in range(10000):
 
-            _, _, sent1, len1, sent2, len2 = get_fake_para_from_trainer(trainer2, lang4, lang3, params2)  # en2fr en fr
-            sent2, len2 = convert_lang(sent2, len2, trainer2, lang3, trainer1, lang1, params.fastbpe, params.bpe_code[lang2], word_dico=params.word_dico[lang2])
+            _, _, sent1, len1, sent2, len2 = get_fake_para_from_trainer(trainer2, lang4, lang3, params2)  # (en2ch  ch) -> (en ch)
+
+
+            sent2, len2 = convert_lang(sent2, len2, trainer2, lang3, trainer1, lang1, params.fastbpe, params.bpe_code[lang2], word_dico=params.word_dico[lang2]) #ch2en
             sent2[0, :] = params.bos_index[params.lang2id[lang2]]
             sent1[0, :] = params.bos_index[params.lang2id[lang1]]
             sent1, sent2 = sent1.cuda(), sent2.cuda()
-            train(trainer1, sent2, len2, sent1, len1, lang2, lang1)
+            train(trainer1, sent2, len2, sent1, len1, lang2, lang1)  # ch2en -> en
 
-            _, _, sent1, len1, sent2, len2 = get_fake_para_from_trainer(trainer1, lang2, lang1, params)  # fr2en fr en
+
+            _, _, sent1, len1, sent2, len2 = get_fake_para_from_trainer(trainer1, lang2, lang1, params)  #ch2en en
             sent2, len2 = convert_lang(sent2, len2, trainer1, lang1, trainer2, lang3, params.fastbpe, params.bpe_code[lang4], word_dico=params.word_dico[lang4])
             sent2[0] = params.bos_index[params2.lang2id[lang4]]
             sent1[0] = params.bos_index[params2.lang2id[lang3]]
+
             sent1, sent2 = sent1.cuda(), sent2.cuda()
             train(trainer2, sent2, len2, sent1, len1, lang4, lang3)
 
             #################################
 
-            # sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer2, lang4, lang3, params2)  # en2fr  _ fr
-            # sent2[0, :] = params2.bos_index[params2.lang2id[lang3]]
-            # sent1[0, :] = params2.bos_index[params2.lang2id[lang4]]
-            # sent1, sent2 = sent1.cuda(), sent2.cuda()
-            # train(trainer2, sent2, len2, sent1, len1, lang3, lang4)
+            sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer2, lang4, lang3, params2)
+            sent2[0, :] = params2.bos_index[params2.lang2id[lang3]]
+            sent1[0, :] = params2.bos_index[params2.lang2id[lang4]]
+            sent1, sent2 = sent1.cuda(), sent2.cuda()
+            train(trainer2, sent2, len2, sent1, len1, lang3, lang4)
+
+            sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer2, lang3, lang4, params2)
+            sent2[0, :] = params2.bos_index[params2.lang2id[lang4]]
+            sent1[0, :] = params2.bos_index[params2.lang2id[lang3]]
+            sent1, sent2 = sent1.cuda(), sent2.cuda()
+            train(trainer2, sent2, len2, sent1, len1, lang4, lang3)
+
+
+            sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer1, lang2, lang1, params)
+            sent2[0, :] = params.bos_index[params.lang2id[lang1]]
+            sent1[0, :] = params.bos_index[params.lang2id[lang2]]
+            sent1, sent2 = sent1.cuda(), sent2.cuda()
+            train(trainer1, sent2, len2, sent1, len1, lang1, lang2)
             #
-            # sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer2, lang3, lang4, params2)
-            # sent2[0, :] = params2.bos_index[params2.lang2id[lang4]]
-            # sent1[0, :] = params2.bos_index[params2.lang2id[lang3]]
-            # sent1, sent2 = sent1.cuda(), sent2.cuda()
-            # train(trainer2, sent2, len2, sent1, len1, lang4, lang3)
-            #
-            # sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer1, lang2, lang1, params)  # fr2en en
-            # sent2[0, :] = params.bos_index[params.lang2id[lang1]]
-            # sent1[0, :] = params.bos_index[params.lang2id[lang2]]
-            # sent1, sent2 = sent1.cuda(), sent2.cuda()
-            # train(trainer1, sent2, len2, sent1, len1, lang1, lang2)
-            #
-            # sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer1, lang1, lang2, params)  # en fr2en
-            # sent2[0, :] = params.bos_index[params.lang2id[lang2]]
-            # sent1[0, :] = params.bos_index[params.lang2id[lang1]]
-            # sent1, sent2 = sent1.cuda(), sent2.cuda()
-            # train(trainer1, sent2, len2, sent1, len1, lang2, lang1)
+            sent1, len1, _, _, sent2, len2 = get_fake_para_from_mono_trainer(trainer1, lang1, lang2, params)
+            sent2[0, :] = params.bos_index[params.lang2id[lang2]]
+            sent1[0, :] = params.bos_index[params.lang2id[lang1]]
+            sent1, sent2 = sent1.cuda(), sent2.cuda()
+            train(trainer1, sent2, len2, sent1, len1, lang2, lang1)
+
+            # --lang1 en --lang2 ch2en --lang3 ch --lang4 en2ch \
 
             if i % 100 == 0:
                 logger.info("trainning at epoch:{},iter{}".format(epoch, i))
