@@ -17,7 +17,7 @@ PIVO_DIRECTIONS_='ch-en2ch-ch,en2ch-ch-en2ch'
 
 
 
-CUDA_VISIBLE_DEVICES=4  python modelWrapper.py	--dump_path /data4/bjji/data/umt_model/ --exp_name nobpe --exp_id umt_ch2en_facebook_nobpe --eval_only True\
+CUDA_VISIBLE_DEVICES=1  python modelWrapper.py	--dump_path /data4/bjji/data/umt_model/ --exp_name nobpe --exp_id umt_ch2en_facebook_nobpe1 --eval_only True\
                                             --transformer True \
                                             --n_enc_layers 4 \
                                             --n_dec_layers 4 \
@@ -43,7 +43,7 @@ CUDA_VISIBLE_DEVICES=4  python modelWrapper.py	--dump_path /data4/bjji/data/umt_
                                             --stopping_criterion bleu_ch2en_en_valid,10\
                                             --batch_size 32 --max_len 130   \
                                             --word_shuffle 3 --word_dropout 0.1 --word_blank 0.2 \
-                                            --exp_name_ nobpe  --exp_id_ umt_en2ch_facebook_nobpe \
+                                            --exp_name_ nobpe  --exp_id_ umt_en2ch_facebook_nobpe1 \
                                             --dump_path_ /data4/bjji/data/umt_model/\
                                             --langs_ 'ch,en2ch' \
                                             --mono_dataset_  $MONO_DATASET_ \
