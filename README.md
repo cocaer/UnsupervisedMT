@@ -4,7 +4,8 @@
 - save the whole best checkpoint, not only the model
 - save the model for each interval
 - do not shuffle the test/valid set for multi-reference   
-- add some online training codes
+- add some online training codes(sercet)
+- use both gpu and  cpu, reduce  cpu load
 
 
 --- 

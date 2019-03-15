@@ -6,6 +6,7 @@
 #
 
 import os
+import pdb
 import time
 from logging import getLogger
 import numpy as np
@@ -433,6 +434,8 @@ class TrainerMT(MultiprocessingEventLoop):
         self.stats['processed_s'] += len1.size(0)
         self.stats['processed_w'] += len1.sum()
 
+
+
     def enc_dec_step(self, lang1, lang2, lambda_xe, back=False):
         """
         Source / target autoencoder training (parallel data):
@@ -859,9 +862,7 @@ class TrainerMT(MultiprocessingEventLoop):
         """
         Save the models periodically.
         """
-        if self.params.save_periodic and self.epoch > 10 == 0 and self.epoch > 0:
-            #self.save_model('epoch-%i' % self.epoch)
-            self.save_checkpoint(str(self.epoch))
+        self.save_checkpoint(str(self.epoch))
 
     def end_epoch(self, scores):
         """

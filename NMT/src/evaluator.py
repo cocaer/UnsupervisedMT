@@ -260,9 +260,9 @@ class EvaluatorMT(object):
                     self.eval_para(lang1, lang2, data_type, scores)
                     self.eval_para(lang2, lang1, data_type, scores)
 
-            for lang1, lang2, lang3 in self.params.pivo_directions:
-                for data_type in ['valid', 'test']:
-                    self.eval_back(lang1, lang2, lang3, data_type, scores)
+            # for lang1, lang2, lang3 in self.params.pivo_directions:
+            #     for data_type in ['valid', 'test']:
+            #         self.eval_back(lang1, lang2, lang3, data_type, scores)
 
         return scores
 
