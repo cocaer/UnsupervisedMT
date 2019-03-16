@@ -34,33 +34,29 @@ TGT_VOCAB=$DATA_PATH/$4.vocab.$VOCAB_SIZE
 
 CONCAT_TOK=$DATA_PATH/concat.tok
 
-SRC_VOCAB_TMP=$DATA_PATH/$3.vocab.$VOCAB_SIZE.tmp
-TGT_VOCAB_TMP=$DATA_PATH/$4.vocab.$VOCAB_SIZE.tmp
+FULL_VOCAB=$DATA_PATH/full_vocab
 
 
-
-cat $SRC_TOK $TGT_TOK | shuf > $CONCAT_TOK
+#cat $SRC_TOK $TGT_TOK | shuf > $CONCAT_TOK
 
 echo
 echo "-----------------------extract vocabulary--------------------"
-$FASTBPE getvocab $SRC_TOK > $SRC_VOCAB_TMP
-$FASTBPE getvocab $TGT_TOK > $TGT_VOCAB_TMP
 
-head -$VOCAB_SIZE $SRC_VOCAB_TMP > $SRC_VOCAB
-head -$VOCAB_SIZE $TGT_VOCAB_TMP > $TGT_VOCAB
+$FASTBPE getvocab $TGT_TOK $SRC_TOK | head  -$1 > $FULL_VOCAB
+
 
 # binarize data
 echo
 echo "-----------------------binarize data--------------------"
-python preprocess.py $SRC_VOCAB  $SRC_TOK
-python preprocess.py $TGT_VOCAB  $TGT_TOK
+python preprocess.py $FULL_VOCAB  $SRC_TOK
+python preprocess.py $FULL_VOCAB  $TGT_TOK
 
 
-python preprocess.py $SRC_VOCAB  $SRC_VALID
-python preprocess.py $TGT_VOCAB  $TGT_VALID
+python preprocess.py $FULL_VOCAB  $SRC_VALID
+python preprocess.py $FULL_VOCAB  $TGT_VALID
 
 
-python preprocess.py $SRC_VOCAB  $SRC_TEST
-python preprocess.py $TGT_VOCAB  $TGT_TEST
+python preprocess.py $FULL_VOCAB  $SRC_TEST
+python preprocess.py $FULL_VOCAB  $TGT_TEST
 
-$FASTTEXT skipgram -epoch $N_EPOCHS -minCount 0 -dim 512 -thread $N_THREADS -ws 5 -neg 10 -input $CONCAT_TOK -output $CONCAT_TOK
+#$FASTTEXT skipgram -epoch $N_EPOCHS -minCount 0 -dim 512 -thread $N_THREADS -ws 5 -neg 10 -input $CONCAT_TOK -output $CONCAT_TOK

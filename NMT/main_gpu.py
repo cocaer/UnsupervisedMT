@@ -278,7 +278,7 @@ def main(params):
 
         while trainer.n_sentences < params.epoch_size:
 
-            use_cpu = use_cpu + 1
+            use_gpu = use_gpu + 1
 
             # discriminator training
             for _ in range(params.n_dis):
