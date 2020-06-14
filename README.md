@@ -6,8 +6,8 @@ The remaining step is identical to the instructions in [UnsupervisedMT](https://
 
 ### Bilingual Dictionary Based Neural Machine Translation without Using Parallel Sentences
 
-[1] Xiangyu Duan, Baijun Ji, Hao Jia, Min Tan, Min Zhang, Boxing Chen, Weihua Luo, Yue Zhang[*Bilingual Dictionary Based Neural Machine Translation without Using
-Parallel Sentences*]
+[1] Xiangyu Duan, Baijun Ji, Hao Jia, Min Tan, Min Zhang, Boxing Chen, Weihua Luo, Yue Zhang
+
 
 
 ## License
